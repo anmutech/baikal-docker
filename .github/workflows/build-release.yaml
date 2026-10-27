@@ -32,20 +32,20 @@ jobs:
       dockerfile: apache.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
       tags: |
-        ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache
-        ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}
+        anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache
+        anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}
     secrets: inherit
 
-  apache_php82:
-    name: Apache (PHP 8.2)
+  apache_php83:
+    name: Apache (PHP 8.3)
     needs: parse_release_tag
     uses: ./.github/workflows/build-job.yaml
     with:
-      dockerfile: apache-php8.2.dockerfile
+      dockerfile: apache-php8.3.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
       tags: |
-        ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache-php8.2
-        ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-php8.2
+        anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache-php8.3
+        anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-php8.3
     secrets: inherit
 
   nginx:
@@ -55,15 +55,15 @@ jobs:
     with:
       dockerfile: nginx.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
-      tags: ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx
+      tags: anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx
     secrets: inherit
 
-  nginx_php82:
-    name: Nginx (PHP 8.2)
+  nginx_php83:
+    name: Nginx (PHP 8.3)
     needs: parse_release_tag
     uses: ./.github/workflows/build-job.yaml
     with:
-      dockerfile: nginx-php8.2.dockerfile
+      dockerfile: nginx-php8.3.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
-      tags: ckulka/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx-php8.2
+      tags: anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx-php8.3
     secrets: inherit

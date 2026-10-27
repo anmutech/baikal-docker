@@ -34,9 +34,9 @@ jobs:
       matrix:
         dockerfile:
           - apache
-          - apache-php8.2
+          - apache-php8.3
           - nginx
-          - nginx-php8.2
+          - nginx-php8.3
 
   apache:
     name: Apache
@@ -46,20 +46,20 @@ jobs:
       dockerfile: apache.dockerfile
       image-version: experimental
       tags: |
-        ckulka/baikal:experimental-apache
-        ckulka/baikal:experimental
+        anmutech/baikal:experimental-apache
+        anmutech/baikal:experimental
     secrets: inherit
 
-  apache_php82:
-    name: Apache (PHP 8.2)
+  apache_php83:
+    name: Apache (PHP 8.3)
     needs: test
     uses: ./.github/workflows/build-job.yaml
     with:
-      dockerfile: apache-php8.2.dockerfile
+      dockerfile: apache-php8.3.dockerfile
       image-version: experimental
       tags: |
-        ckulka/baikal:experimental-apache-php8.2
-        ckulka/baikal:experimental-php8.2
+        anmutech/baikal:experimental-apache-php8.3
+        anmutech/baikal:experimental-php8.3
     secrets: inherit
 
   nginx:
@@ -69,15 +69,15 @@ jobs:
     with:
       dockerfile: nginx.dockerfile
       image-version: experimental
-      tags: ckulka/baikal:experimental-nginx
+      tags: anmutech/baikal:experimental-nginx
     secrets: inherit
 
-  nginx_php82:
-    name: Nginx (PHP 8.2)
+  nginx_php83:
+    name: Nginx (PHP 8.3)
     needs: test
     uses: ./.github/workflows/build-job.yaml
     with:
-      dockerfile: nginx-php8.2.dockerfile
+      dockerfile: nginx-php8.3.dockerfile
       image-version: experimental
-      tags: ckulka/baikal:experimental-nginx-php8.2
+      tags: anmutech/baikal:experimental-nginx-php8.3
     secrets: inherit
