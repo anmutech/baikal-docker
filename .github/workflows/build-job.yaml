@@ -22,6 +22,10 @@ on:
         description: Git reference to build
         default: ${{ github.ref }}
         type: string
+      platforms:
+        description: Comma-separated list of platforms to build for
+        default: linux/amd64,linux/arm/v7,linux/arm64/v8,linux/386
+        type: string
     secrets:
       DOCKERHUB_USERNAME:
         description: DockerHub username
@@ -59,7 +63,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           file: ${{ inputs.dockerfile }}
-          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8,linux/386
+          platforms: ${{ inputs.platforms }}
           push: true
           tags: ${{ inputs.tags }}
           labels: |

@@ -55,6 +55,7 @@ jobs:
     with:
       dockerfile: nginx.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
       tags: anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx
     secrets: inherit
 
@@ -65,5 +66,6 @@ jobs:
     with:
       dockerfile: nginx-php8.3.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
       tags: anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx-php8.3
     secrets: inherit

@@ -72,6 +72,7 @@ jobs:
     with:
       dockerfile: nginx.dockerfile
       image-version: experimental
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
       tags: anmutech/baikal:experimental-nginx
     secrets: inherit
 
@@ -82,5 +83,6 @@ jobs:
     with:
       dockerfile: nginx-php8.3.dockerfile
       image-version: experimental
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
       tags: anmutech/baikal:experimental-nginx-php8.3
     secrets: inherit
