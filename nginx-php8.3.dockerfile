@@ -27,8 +27,8 @@ RUN curl -o /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
     sqlite3                   \
     msmtp msmtp-mta           &&\
   rm -rf /var/lib/apt/lists/* &&\
-  sed -i 's/www-data/nginx/' /etc/php/8.2/fpm/pool.d/www.conf &&\
-  sed -i 's/^listen = .*/listen = \/var\/run\/php-fpm.sock/' /etc/php/8.2/fpm/pool.d/www.conf
+  sed -i 's/www-data/nginx/' /etc/php/8.3/fpm/pool.d/www.conf &&\
+  sed -i 's/^listen = .*/listen = \/var\/run\/php-fpm.sock/' /etc/php/8.3/fpm/pool.d/www.conf
 
 # Add Baikal & nginx configuration
 COPY files/docker-entrypoint.d/*.sh files/docker-entrypoint.d/*.php files/docker-entrypoint.d/nginx/ /docker-entrypoint.d/
