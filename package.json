@@ -1,7 +1,7 @@
 {
-  "name": "ckulka-baikal-docker-tests",
+  "name": "anmutech-baikal-docker-tests",
   "version": "0.0.1",
-  "description": "Runs tests against the ckulka/baikal Docker image",
+  "description": "Runs tests against the anmutech/baikal Docker image",
   "scripts": {
     "prettier:check": "prettier . --check",
     "prettier:fix": "prettier . --write",

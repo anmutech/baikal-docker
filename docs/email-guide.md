@@ -32,7 +32,7 @@ If you have an SMTP server without security in place, i.e. no authentication or 
 # docker-compose.yaml
 services:
   baikal:
-    image: ckulka/baikal:nginx
+    image: anmutech/baikal:nginx
     environment:
       MSMTPRC: |
         defaults
@@ -47,7 +47,7 @@ If you have TLS and authentication in place, add the following configuration par
 # docker-compose.yaml
 services:
   baikal:
-    image: ckulka/baikal:nginx
+    image: anmutech/baikal:nginx
     restart: always
     environment:
       MSMTPRC: |
@@ -85,7 +85,7 @@ Once that is done, use the following configuration:
 # docker-compose.yaml
 services:
   baikal:
-    image: ckulka/baikal:nginx
+    image: anmutech/baikal:nginx
     environment:
       MSMTPRC: |
         defaults
@@ -100,7 +100,7 @@ services:
         password       <password>
 ```
 
-See [examples/docker-compose.sendmail-gmail.yaml](../examples/docker-compose.email-gmail.yaml) for a starter template.
+See [examples/docker-compose.email-gmail.yaml](../examples/docker-compose.email-gmail.yaml) for a starter template.
 
 ## Known issues
 
