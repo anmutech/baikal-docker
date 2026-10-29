@@ -17,7 +17,14 @@ Tags without a version are [weekly re-builds](https://github.com/anmutech/baikal
 
 I follow the same version naming scheme as [Baïkal](http://sabre.io/baikal/) themselves.
 
-The following tags support multiple architectures, e.g. `amd64`, `arm32v7`, `arm64v8` and `i386`.
+The following tags support multiple architectures, e.g. `amd64`, `arm32v7`, and `arm64v8`.
+Since 0.13.0 only `apache` supports `i386`.
+
+- [`0.13.0`, `0.13.0-apache`](https://github.com/anmutech/baikal-docker/blob/0.13.0/apache.dockerfile)
+- [`0.13.0-apache-php8.3`, `0.13.0-php8.3`](https://github.com/anmutech/baikal-docker/blob/0.13.0/apache-php8.3.dockerfile)
+- [`0.13.0-nginx`](https://github.com/anmutech/baikal-docker/blob/0.13.0/nginx.dockerfile)
+- [`0.13.0-nginx-php8.3`](https://github.com/anmutech/baikal-docker/blob/0.13.0/nginx-php8.3.dockerfile)
+
 Previous versions by ckulka:
 
 - [`0.10.1`, `0.10.1-apache`](https://github.com/ckulka/baikal-docker/blob/0.10.1+hafix/apache.dockerfile)
@@ -34,6 +41,12 @@ Previous versions by ckulka:
 - [`0.9.5-nginx-php8.2`](https://github.com/ckulka/baikal-docker/blob/0.9.5/nginx-php8.2.dockerfile)
 
 For earlier versions all the way back to version 0.2.7, please search in the [ckulka tags](https://hub.docker.com/r/ckulka/baikal/tags) tab. Version 0.4.5 and older are only available for `amd64`. Version 0.9.0 and older do not support `i386`.
+
+## Support me
+
+I am maintaining this repo in my free time.
+Please consider supporting me, if you like this project and would like to keep it alive.
+[PayPal Donation](https://www.paypal.com/donate/?hosted_button_id=K9VY9GD799JEC)
 
 ## Quick reference
 
