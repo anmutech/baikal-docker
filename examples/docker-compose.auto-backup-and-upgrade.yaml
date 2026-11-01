@@ -1,0 +1,20 @@
+# Docker Compose file for a Baikal server
+# See https://github.com/anmutech/baikal-docker/blob/master/docs/auto-backup-and-upgrade-guide.md
+
+services:
+  baikal:
+    image: anmutech/baikal:nginx
+    restart: always
+    environment:
+      AUTO_BACKUP_AND_UPGRADE: "I_ACCEPT_THE_RISK" # that this might break my database in the future!
+      # For sqlite databases a backup is created before attempting the upgrade, making recovery possible.
+      # Backing up any other database is the responsibility of the user.
+    ports:
+      - "80:80"
+    volumes:
+      - config:/var/www/baikal/config
+      - data:/var/www/baikal/Specific
+
+volumes:
+  config:
+  data:

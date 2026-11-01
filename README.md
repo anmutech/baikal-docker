@@ -90,6 +90,10 @@ docker compose up
 
 You can now open [http://localhost](http://localhost) or [http://host-ip](http://host-ip) in your browser and use Baïkal.
 
+### Advanced Configurations
+
+See the other docker-compose files in [examples](https://github.com/anmutech/baikal-docker/blob/master/examples) and guides in [docs](https://github.com/anmutech/baikal-docker/blob/master/docs).
+
 ### Persistent Data
 
 The image exposes the `/var/www/baikal/Specific` and `/var/www/baikal/config` folders, which contain the persistent data. These folders should be part of a regular backup.
@@ -102,6 +106,7 @@ When the container starts, the startup script `/docker-entrypoint.d/40-fix-baika
 
 You can find more installation and configuration guides here:
 
+- [Auto Backup and Upgrade Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/auto-backup-and-upgrade.md)
 - [Email Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/email-guide.md)
 - [Home Assistant Fix](https://github.com/anmutech/baikal-docker/blob/master/docs/home-assistant-fix.md)
 - [SSL Certificate Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/ssl-certificates-guide.md)
