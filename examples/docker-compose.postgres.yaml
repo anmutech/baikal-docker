@@ -1,0 +1,29 @@
+# Docker Compose file for a Baikal server with PostgreSQL 18
+# Adapted from examples/docker-compose.mariadb.yaml
+
+services:
+  baikal:
+    image: anmutech/baikal:nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - config:/var/www/baikal/config
+      - data:/var/www/baikal/Specific
+
+  db:
+    image: postgres:18
+    restart: always
+    # set shared memory limit
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: ilovecookies
+      POSTGRES_DB: baikal
+      POSTGRES_USER: baikal
+    volumes:
+      - db:/var/lib/postgresql
+
+volumes:
+  config:
+  data:
+  db:

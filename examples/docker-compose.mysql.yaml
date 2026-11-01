@@ -1,0 +1,28 @@
+# Docker Compose file for a Baikal server with MySQL 26
+# Adapted from examples/docker-compose.mariadb.yaml
+
+services:
+  baikal:
+    image: anmutech/baikal:nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - config:/var/www/baikal/config
+      - data:/var/www/baikal/Specific
+
+  db:
+    image: mysql:26
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: adalovelace # CHANGE THIS PASSWORD
+      MYSQL_DATABASE: baikal
+      MYSQL_USER: baikal
+      MYSQL_PASSWORD: ilovecookies # CHANGE THIS PASSWORD
+    volumes:
+      - db:/var/lib/mysql
+
+volumes:
+  config:
+  data:
+  db:

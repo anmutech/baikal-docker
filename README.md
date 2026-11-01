@@ -107,6 +107,7 @@ When the container starts, the startup script `/docker-entrypoint.d/40-fix-baika
 You can find more installation and configuration guides here:
 
 - [Auto Backup and Upgrade Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/auto-backup-and-upgrade.md)
+- [Database Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/database-guide.md)
 - [Email Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/email-guide.md)
 - [Home Assistant Fix](https://github.com/anmutech/baikal-docker/blob/master/docs/home-assistant-fix.md)
 - [SSL Certificate Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/ssl-certificates-guide.md)
