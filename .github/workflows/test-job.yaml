@@ -41,10 +41,7 @@ jobs:
 
       - name: Assert Home Assistant fix is not applied by default
         run: |
-          HA_FIX=$(sha1sum files/docker-entrypoint.d/Plugin-with-home-assistant-fix.php | awk '{print $1}')
-          ACTUAL=$(docker exec ${{ inputs.dockerfile }} sha1sum /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php | awk '{print $1}')
-
-          if [ "$ACTUAL" == "$HA_FIX" ]; then
+          if docker exec ${{ inputs.dockerfile }} grep -q "Home Assistant Fix" /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php; then
             echo "::error file=files/docker-entrypoint.d/30-apply-home-assistant-fix.sh:: Home Assistant fix was applied, even though it was not enabled."
             exit 1
           fi
@@ -60,11 +57,7 @@ jobs:
           docker logs baikal-ha
 
           # Assert Home Assistant fix is applied
-          EXPECTED=$(sha1sum files/docker-entrypoint.d/Plugin-with-home-assistant-fix.php | awk '{print $1}')
-          echo "Expected: $EXPECTED"
-          ACTUAL=$(docker exec baikal-ha sha1sum /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php | awk '{print $1}')
-          echo "Actual: $ACTUAL"
-          if [ "$ACTUAL" != "$EXPECTED" ]; then
+          if ! docker exec baikal-ha grep -q "Home Assistant Fix" /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php; then
             echo "::error file=files/docker-entrypoint.d/30-apply-home-assistant-fix.sh:: Home Assistant fix was not applied, even though it was enabled."
             exit 1
           fi

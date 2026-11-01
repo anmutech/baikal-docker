@@ -9,28 +9,101 @@ then
   exit 0
 fi
 
-# Skip further processing if the current Plugin.php file already has the Home Assistant fix
-CHECKSUM="5684ac94ff1ec2a83cf3484d7b33f162be801c00  /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php"
-if echo $CHECKSUM | sha1sum --check --status - ;
-then
-  echo "$ME: info: Home Assistant fix already applied"
-  exit 0
-fi
+TARGET="/var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php"
 
-# Abort if the Plugin.php file differs from the packaged version.
-# This means the user customized the Plugin.php file already and applying the 
-# Home Assistant fix would remove any modifications the user did. We inform the
-# user about this, so that they can make the necessary adjustments to their
-# custom Plugin.php file.
-CHECKSUM="58b6b2d9da6717ce5d953fc9590f30c9d2edaabf  /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php"
-if ! echo $CHECKSUM | sha1sum --check --status - ;
+if [ ! -f "$TARGET" ]
 then
-  echo "$ME: info: Plugin.php differs from the packaged version. It looks like you customized it already, so we won't overwrite it and remove your modifications. Please either revert your own changes, or apply the Home Assistant fix manually to your custom Plugin.php file."
+  echo "$ME: FAIL: $TARGET not found"
   exit 1
 fi
 
+# The Home Assistant fix: sabre/dav parses a calendar's VTIMEZONE into a
+# DateTimeZone object, which older PHP/vobject versions handle badly; instead
+# construct the DateTimeZone directly from the timezone string.
+# We edit the packaged file in place (granular, idempotent), rather than
+# replacing the whole file, so any other local modifications are preserved.
+# The edit only applies if the exact original block is present exactly once.
+OLD_TEXT=$(cat <<'OLD_BLOCK'
+            if (isset($tzResult[$tzProp])) {
+                // This property contains a VCALENDAR with a single
+                // VTIMEZONE.
+                $vtimezoneObj = VObject\Reader::read($tzResult[$tzProp]);
+                $calendarTimeZone = $vtimezoneObj->VTIMEZONE->getTimeZone();
 
-# Replace the Plugin.php file with the one with the Home Assistant fix
-echo "$ME: info: Applying Home Assistant fix"
-cp /docker-entrypoint.d/Plugin-with-home-assistant-fix.php /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php
-echo "$ME: info: Applied Home Assistant fix"
+                // Destroy circular references so PHP will garbage collect the
+                // object.
+                $vtimezoneObj->destroy();
+            } else {
+                // Defaulting to UTC.
+                $calendarTimeZone = new DateTimeZone('UTC');
+            }
+OLD_BLOCK
+)
+
+NEW_TEXT=$(cat <<'NEW_BLOCK'
+            if (isset($tzResult[$tzProp])) {
+                // This property contains a VCALENDAR with a single
+                // VTIMEZONE.
+                //$vtimezoneObj = VObject\Reader::read($tzResult[$tzProp]);
+                //$calendarTimeZone = $vtimezoneObj->VTIMEZONE->getTimeZone();
+
+                // Destroy circular references so PHP will garbage collect the
+                // object.
+                //$vtimezoneObj->destroy();
+                // Home Assistant Fix
+                $calendarTimeZone = new DateTimeZone($tzResult[$tzProp]);
+            } else {
+                // Defaulting to UTC.
+                $calendarTimeZone = new DateTimeZone('UTC');
+            }
+NEW_BLOCK
+)
+
+# --- Count exact occurrences --------------------------------
+count=$(OLD_TEXT="$OLD_TEXT" awk '
+BEGIN { old = ENVIRON["OLD_TEXT"] }
+{ buf = buf $0 "\n" }
+END {
+    c = 0; pos = 1
+    while (1) {
+        i = index(substr(buf, pos), old)
+        if (i == 0) break
+        c++
+        pos += i - 1 + length(old)
+    }
+    print c
+}' "$TARGET")
+
+case "$count" in
+  0)
+    # Either the fix is already applied, or the file was customized such that
+    # the original block no longer matches. We cannot tell which, so treat it
+    # as already handled instead of aborting container start.
+    echo "$ME: info: original code block not found in Plugin.php; the Home Assistant fix is either already applied or the file was customized — nothing to do"
+    exit 0
+    ;;
+  1)
+    ;;
+  *)
+    echo "$ME: FAIL: original code block found $count times in Plugin.php; need exactly 1 — the file was likely customized, so we won't modify it. Please apply the Home Assistant fix manually."
+    exit 1
+    ;;
+esac
+
+# --- Replace -------------------------------------------------
+TMP="${TARGET}.tmp.$$"
+OLD_TEXT="$OLD_TEXT" NEW_TEXT="$NEW_TEXT" awk -v out="$TMP" '
+BEGIN {
+    old = ENVIRON["OLD_TEXT"]
+    new = ENVIRON["NEW_TEXT"]
+}
+{ buf = buf $0 "\n" }
+END {
+    pos = index(buf, old)
+    result = substr(buf, 1, pos - 1) new substr(buf, pos + length(old))
+    printf "%s", result > out
+    close(out)
+}' "$TARGET"
+
+mv "$TMP" "$TARGET"
+echo "$ME: info: Applied Home Assistant fix to Plugin.php"
