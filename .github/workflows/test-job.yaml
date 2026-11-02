@@ -4,7 +4,15 @@ on:
   workflow_call:
     inputs:
       dockerfile:
-        description: Path to the Dockerfile
+        description: Server to test (apache or nginx); the .dockerfile suffix is appended automatically
+        required: true
+        type: string
+      php-version:
+        description: PHP version build arg; source it from versions.env
+        required: true
+        type: string
+      baikal-version:
+        description: Baikal version build arg; must match the version the caller will build/publish
         required: true
         type: string
       ref:
@@ -31,23 +39,26 @@ jobs:
 
       - name: Build Docker image
         id: build
-        run: docker build -f ${{ inputs.dockerfile }}.dockerfile -t baikal-image .
+        run: docker build -f ${{ inputs.dockerfile }}.dockerfile \
+          --build-arg BAIKAL_VERSION="${{ inputs.baikal-version }}" \
+          --build-arg PHP_VERSION="${{ inputs.php-version }}" \
+          -t baikal-image .
 
       - name: Start Baikal container
-        run: docker run --rm -dp 80:80 --name ${{ inputs.dockerfile }} baikal-image
+        run: docker run --rm -dp 80:80 --name baikal-test baikal-image
 
       - name: Run Cypress tests
         run: npm run test
 
       - name: Assert Home Assistant fix is not applied by default
         run: |
-          if docker exec ${{ inputs.dockerfile }} grep -q "Home Assistant Fix" /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php; then
+          if docker exec baikal-test grep -q "Home Assistant Fix" /var/www/baikal/vendor/sabre/dav/lib/CalDAV/Plugin.php; then
             echo "::error file=files/docker-entrypoint.d/30-apply-home-assistant-fix.sh:: Home Assistant fix was applied, even though it was not enabled."
             exit 1
           fi
 
       - name: Stop Baikal container
-        run: docker stop ${{ inputs.dockerfile }}
+        run: docker stop baikal-test
 
       - name: Assert Home Assistant fix is applied
         run: |
@@ -89,5 +100,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cypress-results-${{ inputs.dockerfile }}
+          name: cypress-results-${{ inputs.dockerfile }}-${{ inputs.php-version }}
           path: cypress/screenshots

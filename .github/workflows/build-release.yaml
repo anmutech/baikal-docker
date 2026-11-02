@@ -18,11 +18,25 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       baikal-version: ${{ steps.parse-release-tag.outputs.BAIKAL_VERSION }}
+      latest-php: ${{ steps.read-versions.outputs.LATEST_PHP }}
+      oldest-php: ${{ steps.read-versions.outputs.OLDEST_PHP }}
     steps:
       # Get the release version by stripping build metadata from the release name
       - name: Parse release tag
         id: parse-release-tag
         run: echo BAIKAL_VERSION=${GITHUB_REF_NAME/+*/} >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
+
+      - name: Read versions and validate versions.env
+        id: read-versions
+        uses: ./.github/actions/read-versions
+        with:
+          # This workflow publishes the release-tagged Baïkal, so the release
+          # tag is the version of record; versions.env only provides the PHP versions.
+          baikal-version: ${{ steps.parse-release-tag.outputs.BAIKAL_VERSION }}
 
   apache:
     name: Apache
@@ -31,21 +45,25 @@ jobs:
     with:
       dockerfile: apache.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
+      baikal-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
+      php-version: ${{ needs.parse_release_tag.outputs.latest-php }}
       tags: |
         anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache
         anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}
     secrets: inherit
 
-  apache_php83:
-    name: Apache (PHP 8.3)
+  apache_oldest_php:
+    name: Apache (PHP ${{ needs.parse_release_tag.outputs.oldest-php }})
     needs: parse_release_tag
     uses: ./.github/workflows/build-job.yaml
     with:
-      dockerfile: apache-php8.3.dockerfile
+      dockerfile: apache.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
+      baikal-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
+      php-version: ${{ needs.parse_release_tag.outputs.oldest-php }}
       tags: |
-        anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache-php8.3
-        anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-php8.3
+        anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-apache-php${{ needs.parse_release_tag.outputs.oldest-php }}
+        anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-php${{ needs.parse_release_tag.outputs.oldest-php }}
     secrets: inherit
 
   nginx:
@@ -56,16 +74,20 @@ jobs:
       dockerfile: nginx.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
       platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+      baikal-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
+      php-version: ${{ needs.parse_release_tag.outputs.latest-php }}
       tags: anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx
     secrets: inherit
 
-  nginx_php83:
-    name: Nginx (PHP 8.3)
+  nginx_oldest_php:
+    name: Nginx (PHP ${{ needs.parse_release_tag.outputs.oldest-php }})
     needs: parse_release_tag
     uses: ./.github/workflows/build-job.yaml
     with:
-      dockerfile: nginx-php8.3.dockerfile
+      dockerfile: nginx.dockerfile
       image-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
       platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
-      tags: anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx-php8.3
+      baikal-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
+      php-version: ${{ needs.parse_release_tag.outputs.oldest-php }}
+      tags: anmutech/baikal:${{ needs.parse_release_tag.outputs.baikal-version }}-nginx-php${{ needs.parse_release_tag.outputs.oldest-php }}
     secrets: inherit

@@ -10,20 +10,23 @@ For more details, see [anmutech/baikal-docker (GitHub)](https://github.com/anmut
 
 Tags without a version are [weekly re-builds](https://github.com/anmutech/baikal-docker/actions/workflows/build-latest.yaml) to include the latest base image with the most recent updates:
 
-- `latest` and `apache` are re-builds of the latest `*-apache` version
-- `apache-php8.3` are re-builds of the latest `*-apache-php8.3` version
-- `nginx` are re-builds of the latest `*-nginx` version
-- `nginx-php8.3` are re-builds of the latest `*-nginx-php8.3` version
+- `latest` and `apache`, the latest Baïkal with the newest supported PHP
+- `apache-phpX`, the latest Baïkal with `X = OLDEST_PHP_VERSION` from [versions.env](versions.env)
+- `nginx`, and `nginx-phpX` likewise
+
+Two images are built from each Dockerfile — `apache.dockerfile` and `nginx.dockerfile` — one with `LATEST_PHP_VERSION` (the un-suffixed tag) and one with `OLDEST_PHP_VERSION` (the `-phpX` tag). Both the Baïkal version and the two PHP versions are defined in a single place, [versions.env](versions.env).
 
 I follow the same version naming scheme as [Baïkal](http://sabre.io/baikal/) themselves.
 
 The following tags support multiple architectures, e.g. `amd64`, `arm32v7`, and `arm64v8`.
 Since 0.13.0 only `apache` supports `i386`.
 
-- [`0.13.0`, `0.13.0-apache`](https://github.com/anmutech/baikal-docker/blob/0.13.0/apache.dockerfile)
-- [`0.13.0-apache-php8.3`, `0.13.0-php8.3`](https://github.com/anmutech/baikal-docker/blob/0.13.0/apache-php8.3.dockerfile)
-- [`0.13.0-nginx`](https://github.com/anmutech/baikal-docker/blob/0.13.0/nginx.dockerfile)
-- [`0.13.0-nginx-php8.3`](https://github.com/anmutech/baikal-docker/blob/0.13.0/nginx-php8.3.dockerfile)
+For version `0.13.0` (current), where `LATEST_PHP_VERSION = 8.5` & `OLDEST_PHP_VERSION = 8.3`:
+
+- [`0.13.0`, `0.13.0-apache`](https://github.com/anmutech/baikal-docker/blob/master/apache.dockerfile)
+- [`0.13.0-apache-php8.3`, `0.13.0-php8.3`](https://github.com/anmutech/baikal-docker/blob/master/apache.dockerfile)
+- [`0.13.0-nginx`](https://github.com/anmutech/baikal-docker/blob/master/nginx.dockerfile)
+- [`0.13.0-nginx-php8.3`](https://github.com/anmutech/baikal-docker/blob/master/nginx.dockerfile)
 
 Previous versions by ckulka:
 
@@ -53,7 +56,7 @@ Please consider supporting me, if you like this project and would like to keep i
 - **Where to file issues**:
   [https://github.com/anmutech/baikal-docker/issues](https://github.com/anmutech/baikal-docker/issues)
 - **Supported architectures** ([more info](https://github.com/docker-library/official-images#architectures-other-than-amd64)):
-  `amd64`, `arm32v7`, `arm64v8`, `i386`
+  `amd64`, `arm32v7`, `arm64v8`, `i386 (apache only)`
 - **Image updates**:
   [PRs for anmutech/baikal-docker](https://github.com/anmutech/baikal-docker/pulls)
 - **Source of this description**:
@@ -147,3 +150,28 @@ This image has the latest code from the source repository [anmutech/baikal-docke
 This image relies on [nginx](https://www.nginx.com/) and uses the [official nginx image](https://hub.docker.com/_/nginx/).
 
 Compared to the Apache variant, it is significantly smaller (less than half the size) and produces no warning messages out-of-the-box.
+
+## Building
+
+The Dockerfiles have **no default** values for the `BAIKAL_VERSION` and `PHP_VERSION` build args — every build must supply them explicitly, so the build can never silently use a stale version. The [versions.env](versions.env) file at the repository root is the single place to read those values from.
+
+To build the Apache image (using the latest supported PHP) from a local clone of this repository:
+
+```sh
+. ./versions.env   # exports BAIKAL_VERSION, LATEST_PHP_VERSION, OLDEST_PHP_VERSION
+docker build \
+  --build-arg BAIKAL_VERSION="$BAIKAL_VERSION" \
+  --build-arg PHP_VERSION="$LATEST_PHP_VERSION" \
+  -f apache.dockerfile -t baikal:local .
+```
+
+The same command works for the nginx image; just point at the other file:
+
+```sh
+docker build \
+  --build-arg BAIKAL_VERSION="$BAIKAL_VERSION" \
+  --build-arg PHP_VERSION="$OLDEST_PHP_VERSION" \
+  -f nginx.dockerfile -t baikal:nginx-oldest .
+```
+
+Omitting either `--build-arg`, or supplying a `PHP_VERSION` that has no matching PHP packages available, will fail the build — that is intentional.

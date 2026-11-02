@@ -25,15 +25,39 @@ jobs:
       - name: Ensure files pass eslint checks
         run: npm run lint
 
+  read_versions:
+    needs: lint
+    runs-on: ubuntu-latest
+    outputs:
+      baikal: ${{ steps.read-versions.outputs.BAIKAL }}
+      latest-php: ${{ steps.read-versions.outputs.LATEST_PHP }}
+      oldest-php: ${{ steps.read-versions.outputs.OLDEST_PHP }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
+
+      - name: Read versions and validate versions.env
+        id: read-versions
+        uses: ./.github/actions/read-versions
+
   test:
+    name: Test ${{ matrix.server }} (php-${{ matrix.php-version }})
+    needs:
+      - lint
+      - read_versions
     uses: ./.github/workflows/test-job.yaml
     with:
-      dockerfile: ${{ matrix.dockerfile }}
+      dockerfile: ${{ matrix.server }}
+      php-version: ${{ matrix.php-version }}
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      ref: ${{ github.event.pull_request.head.sha }}
     strategy:
       fail-fast: true
       matrix:
-        dockerfile:
+        server:
           - apache
-          - apache-php8.3
           - nginx
-          - nginx-php8.3
+        php-version:
+          - ${{ needs.read_versions.outputs.latest-php }}
+          - ${{ needs.read_versions.outputs.oldest-php }}
