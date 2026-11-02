@@ -39,7 +39,8 @@ jobs:
 
       - name: Build Docker image
         id: build
-        run: docker build -f ${{ inputs.dockerfile }}.dockerfile \
+        run: |
+          docker build -f ${{ inputs.dockerfile }}.dockerfile \
           --build-arg BAIKAL_VERSION="${{ inputs.baikal-version }}" \
           --build-arg PHP_VERSION="${{ inputs.php-version }}" \
           -t baikal-image .
