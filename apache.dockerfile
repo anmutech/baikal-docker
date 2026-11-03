@@ -41,6 +41,7 @@ EXPOSE 443
 VOLUME /var/www/baikal/config
 VOLUME /var/www/baikal/Specific
 
+ENV BAIKAL_VOLUME_OWNER=www-data:www-data
 COPY files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY files/docker-entrypoint.d/*.sh files/docker-entrypoint.d/*.php files/docker-entrypoint.d/httpd/ /docker-entrypoint.d/
 ENTRYPOINT [ "/docker-entrypoint.sh" ]

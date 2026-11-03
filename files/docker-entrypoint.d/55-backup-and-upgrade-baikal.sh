@@ -1,18 +1,23 @@
 #!/bin/sh
 
-# Opt in with: AUTO_BACKUP_AND_UPGRADE=I_ACCEPT_THE_RISK
+# Opt in with (exactly the value "true" enables each):
+#   AUTO_UPGRADE_DB=true          perform the automatic database upgrade
+#   BACKUP_BEFORE_UPGRADE=true    create a timestamped backup of
+#                                 /var/www/baikal/config/ and /var/www/baikal/Specific/,
+#                                 written INSIDE each respective directory
+#                                 (they are volumes, so the user can access them
+#                                 from the host), before the upgrade
+# Combinations:
+#   both true                  backup, then upgrade
+#   AUTO_UPGRADE_DB only       upgrade without a backup
+#   BACKUP_BEFORE_UPGRADE only backup only; the upgrade itself is left to the user
 #
 # This is a hack, not an officially supported Baikal workflow: it drives
-# Baikal's upgrade code out-of-band. The required magic value exists so a
-# user must consciously opt in.
+# Baikal's upgrade code out-of-band, so each action must be explicitly enabled.
 #
-# Only when the Baikal version in the container (Core/Distrib.php) is newer
-# than the version recorded in config/baikal.yaml (system.configured_version)
-# does the script:
-#   1. create a timestamped backup of /var/www/baikal/config/ and
-#      /var/www/baikal/Specific/, written INSIDE each respective directory
-#      (they are volumes, so the user can access them from the host), and
-#   2. run the CLI database upgrade (baikal-cli-upgrade.php).
+# A backup and/or upgrade only happens when the Baikal version in the container
+# (Core/Distrib.php) is newer than the version recorded in config/baikal.yaml
+# (system.configured_version).
 #
 # Runs BEFORE the web server starts. On success the container proceeds
 # normally; on upgrade failure the container is aborted by the `set -e` in
@@ -23,12 +28,29 @@
 set -e
 ME=$(basename $0)
 
-echo "$ME: check: AUTO_BACKUP_AND_UPGRADE=${AUTO_BACKUP_AND_UPGRADE:-<unset>}"
+echo "$ME: check: AUTO_UPGRADE_DB=${AUTO_UPGRADE_DB:-<unset>} BACKUP_BEFORE_UPGRADE=${BACKUP_BEFORE_UPGRADE:-<unset>}"
 
-# Exit unless explicit, deliberate consent is given
-if [ -z ${AUTO_BACKUP_AND_UPGRADE+x} ] || [ "$AUTO_BACKUP_AND_UPGRADE" != "I_ACCEPT_THE_RISK" ]
+# The former single flag is gone. If it is still set, warn and ignore it.
+if [ -n "${AUTO_BACKUP_AND_UPGRADE:-}" ]
 then
-  echo "$ME: SKIP: automatic backup + upgrade not enabled; to enable it set AUTO_BACKUP_AND_UPGRADE=I_ACCEPT_THE_RISK (this is a non-official Baikal workflow; a pending database upgrade, if any, must otherwise be done through the web wizard)"
+  echo "$ME: WARN: legacy flag AUTO_BACKUP_AND_UPGRADE is no longer supported (value: ${AUTO_BACKUP_AND_UPGRADE}) and is ignored; use AUTO_UPGRADE_DB=true and/or BACKUP_BEFORE_UPGRADE=true instead"
+fi
+
+UPGRADE=0
+if [ "${AUTO_UPGRADE_DB:-}" = "true" ]
+then
+  UPGRADE=1
+fi
+BACKUP=0
+if [ "${BACKUP_BEFORE_UPGRADE:-}" = "true" ]
+then
+  BACKUP=1
+fi
+
+# Exit unless at least one action is enabled
+if [ "$UPGRADE" -eq 0 ] && [ "$BACKUP" -eq 0 ]
+then
+  echo "$ME: SKIP: automatic backup + upgrade not enabled; to enable it set AUTO_UPGRADE_DB=true (upgrade) and/or BACKUP_BEFORE_UPGRADE=true (backup) (this is a non-official Baikal workflow; a pending database upgrade, if any, must otherwise be done through the web wizard)"
   exit 0
 fi
 
@@ -79,46 +101,68 @@ fi
 LOWEST_VERSION="$(printf '%s\n%s\n' "$CONTAINER_VERSION" "$CONFIGURED_VERSION" | sort -V | head -n1)"
 if [ "$LOWEST_VERSION" != "$CONTAINER_VERSION" ]
 then
-  echo "$ME: PENDING $CONFIGURED_VERSION -> $CONTAINER_VERSION; a database upgrade might be pending — will back up config/ and Specific/, then upgrade"
+  echo "$ME: PENDING $CONFIGURED_VERSION -> $CONTAINER_VERSION; a database upgrade might be pending (backup: $([ "$BACKUP" -eq 1 ] && echo enabled || echo disabled), automatic upgrade: $([ "$UPGRADE" -eq 1 ] && echo enabled || echo disabled))"
 else
   echo "$ME: UPTODATE $CONFIGURED_VERSION (container Baikal version is $CONTAINER_VERSION); no backup, no upgrade"
   exit 0
 fi
 
-# --- Backup (only the directories that actually exist) ---
+# --- Backup before upgrade (only if requested) ---
 # Each archive is written INSIDE the directory it backs up (a volume, so the
 # user can access it from the host), and every file matching
 # *-backup-*.tar.gz is excluded, so a backup never contains earlier backups.
 # The archive is created OUTSIDE the directory first and moved in afterwards:
 # tar exits 1 ("file changed as we read it") if the output file is created
 # inside the very directory it is reading.
-TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-BACKED_UP=""
-for dir in config Specific
-do
-  if [ -d "$BAIKAL_ROOT/$dir" ]
-  then
-    ARCHIVE="$BAIKAL_ROOT/$dir/$dir-backup-$TIMESTAMP.tar.gz"
-    TMP_ARCHIVE="$(mktemp)"
-    if tar -C "$BAIKAL_ROOT/$dir" -czf "$TMP_ARCHIVE" --exclude='*-backup-*.tar.gz' .
-    then
-      mv "$TMP_ARCHIVE" "$ARCHIVE"
-      chmod 644 "$ARCHIVE"
-      echo "$ME: created backup $ARCHIVE"
-      BACKED_UP="$BACKED_UP $dir"
-    else
-      rm -f "$TMP_ARCHIVE"
-      echo "$ME: FAIL: could not create backup for $dir"
-      exit 0
-    fi
-  else
-    echo "$ME: note: $BAIKAL_ROOT/$dir does not exist; skipping it"
-  fi
-done
-
-if [ -z "$BACKED_UP" ]
+# The entrypoint runs as root, so the archive ends up root:root; chown it to
+# the image's web server user (BAIKAL_VOLUME_OWNER, set by the dockerfile) so
+# the backup matches the ownership of the config and Specific trees.
+if [ "$BACKUP" -eq 1 ]
 then
-  echo "$ME: note: nothing backed up — fresh install? Exit out, potentially requires user interaction"
+  TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+  BACKED_UP=""
+  for dir in config Specific
+  do
+    if [ -d "$BAIKAL_ROOT/$dir" ]
+    then
+      ARCHIVE="$BAIKAL_ROOT/$dir/$dir-backup-$TIMESTAMP.tar.gz"
+      TMP_ARCHIVE="$(mktemp)"
+      if tar -C "$BAIKAL_ROOT/$dir" -czf "$TMP_ARCHIVE" --exclude='*-backup-*.tar.gz' .
+      then
+        mv "$TMP_ARCHIVE" "$ARCHIVE"
+        chmod 644 "$ARCHIVE"
+        OWNER="${BAIKAL_VOLUME_OWNER:-www-data:www-data}"
+        if id "${OWNER%%:*}" 2>/dev/null
+        then
+          chown "$OWNER" "$ARCHIVE"
+          echo "$ME: created backup $ARCHIVE (owner: $OWNER)"
+        else
+          echo "$ME: created backup $ARCHIVE (owner: root — BAIKAL_VOLUME_OWNER='$OWNER' references an unknown user here)"
+        fi
+        BACKED_UP="$BACKED_UP $dir"
+      else
+        rm -f "$TMP_ARCHIVE"
+        echo "$ME: FAIL: could not create backup for $dir"
+        exit 0
+      fi
+    else
+      echo "$ME: note: $BAIKAL_ROOT/$dir does not exist; skipping it"
+    fi
+  done
+
+  if [ -z "$BACKED_UP" ]
+  then
+    echo "$ME: note: nothing backed up — fresh install? Exit out, potentially requires user interaction"
+    exit 0
+  fi
+else
+  echo "$ME: note: BACKUP_BEFORE_UPGRADE is not set to 'true'; no backup will be created"
+fi
+
+# Backup-only mode: no automatic upgrade was requested
+if [ "$UPGRADE" -eq 0 ]
+then
+  echo "$ME: OK: backup only; automatic upgrade is not enabled (AUTO_UPGRADE_DB is not 'true'), performing the upgrade is left to the user (web wizard, or re-run with AUTO_UPGRADE_DB=true)"
   exit 0
 fi
 

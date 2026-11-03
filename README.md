@@ -109,6 +109,8 @@ When the container starts, the startup script `/docker-entrypoint.d/40-fix-baika
 
 The `baikal` service in every [compose example](https://github.com/anmutech/baikal-docker/blob/master/examples) carries a `healthcheck` that uses the container's built-in `php` to fetch its own homepage and assert it contains the string `Baïkal is running alright.`. Projects that include a database container (`mysql`, `mariadb`, `postgres`) also give the `db` service a healthcheck (`mysqladmin ping` / `pg_isready`) and start `baikal` only once that dependency is `service_healthy`.
 
+The `healthcheck` fails on fresh installs until baikal has been initialized.
+
 ### Further Guides
 
 You can find more installation and configuration guides here:
