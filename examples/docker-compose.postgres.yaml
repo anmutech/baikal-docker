@@ -10,6 +10,11 @@ services:
     volumes:
       - config:/var/www/baikal/config
       - data:/var/www/baikal/Specific
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(str_contains(file_get_contents('http://127.0.0.1:80/') ?? '', 'Baïkal is running alright.') ? 0 : 1);\""]
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:18
@@ -22,6 +27,8 @@ services:
       POSTGRES_USER: baikal
     volumes:
       - db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1"]
 
 volumes:
   config:

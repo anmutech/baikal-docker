@@ -105,6 +105,10 @@ If you want to use local folders instead of Docker volumes, see [examples/docker
 
 When the container starts, the startup script `/docker-entrypoint.d/40-fix-baikal-file-permissions.sh` ([Apache httpd](https://github.com/anmutech/baikal-docker/blob/master/files/docker-entrypoint.d/httpd/40-fix-baikal-file-permissions.sh), [nginx](https://github.com/anmutech/baikal-docker/blob/master/files/docker-entrypoint.d/nginx/40-fix-baikal-file-permissions.sh)) ensures that the file permissions are correct for all volumes mounted inside the baikal install directory `/var/www/baikal/`. You can disable this behaviour by setting the environment variable `BAIKAL_SKIP_CHOWN` to any value, e.g. `FALSE`.
 
+### Healthchecks
+
+The `baikal` service in every [compose example](https://github.com/anmutech/baikal-docker/blob/master/examples) carries a `healthcheck` that uses the container's built-in `php` to fetch its own homepage and assert it contains the string `Baïkal is running alright.`. Projects that include a database container (`mysql`, `mariadb`, `postgres`) also give the `db` service a healthcheck (`mysqladmin ping` / `pg_isready`) and start `baikal` only once that dependency is `service_healthy`.
+
 ### Further Guides
 
 You can find more installation and configuration guides here:

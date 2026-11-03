@@ -2,6 +2,11 @@
 
 This guide outlines the database configuration for mariadb/mysql/postgres.
 
+## Starting order
+
+The `baikal` service in the examples starts only after the database service reports `healthy` (`depends_on: condition: service_healthy`). The `db` services use the healthchecks built into the official images (`mysqladmin ping` / `pg_isready`).
+The `baikal` service itself also has a healthcheck, which reports `unhealthy` until first-time setup is complete.
+
 ## Mariadb
 
 See [examples/docker-compose.mariadb.yaml](../examples/docker-compose.mariadb.yaml) for a starter template.
