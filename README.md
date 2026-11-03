@@ -115,7 +115,7 @@ The `healthcheck` fails on fresh installs until baikal has been initialized.
 
 You can find more installation and configuration guides here:
 
-- [Auto Backup and Upgrade Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/auto-backup-and-upgrade.md)
+- [Auto Backup and Upgrade Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/auto-backup-and-upgrade-guide.md)
 - [Database Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/database-guide.md)
 - [Email Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/email-guide.md)
 - [Home Assistant Fix](https://github.com/anmutech/baikal-docker/blob/main/docs/home-assistant-fix.md)
