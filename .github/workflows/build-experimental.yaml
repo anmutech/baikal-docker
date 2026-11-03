@@ -9,10 +9,10 @@ on:
   schedule:
     - cron: 20 8 * 1/3 0
 
-  # Build on push to master
+  # Build on push to main
   push:
     branches:
-      - master
+      - main
     paths:
       - .github/workflows/build-experimental.yaml
       - "*.dockerfile"

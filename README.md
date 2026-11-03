@@ -23,10 +23,10 @@ Since 0.13.0 only `apache` supports `i386`.
 
 For version `0.13.0` (current), where `LATEST_PHP_VERSION = 8.5` & `OLDEST_PHP_VERSION = 8.3`:
 
-- [`0.13.0`, `0.13.0-apache`](https://github.com/anmutech/baikal-docker/blob/master/apache.dockerfile)
-- [`0.13.0-apache-php8.3`, `0.13.0-php8.3`](https://github.com/anmutech/baikal-docker/blob/master/apache.dockerfile)
-- [`0.13.0-nginx`](https://github.com/anmutech/baikal-docker/blob/master/nginx.dockerfile)
-- [`0.13.0-nginx-php8.3`](https://github.com/anmutech/baikal-docker/blob/master/nginx.dockerfile)
+- [`0.13.0`, `0.13.0-apache`](https://github.com/anmutech/baikal-docker/blob/main/apache.dockerfile)
+- [`0.13.0-apache-php8.3`, `0.13.0-php8.3`](https://github.com/anmutech/baikal-docker/blob/main/apache.dockerfile)
+- [`0.13.0-nginx`](https://github.com/anmutech/baikal-docker/blob/main/nginx.dockerfile)
+- [`0.13.0-nginx-php8.3`](https://github.com/anmutech/baikal-docker/blob/main/nginx.dockerfile)
 
 Previous versions by ckulka:
 
@@ -85,7 +85,7 @@ The following command will start Baïkal:
 docker run --rm -it -p 80:80 anmutech/baikal:nginx
 ```
 
-Alternatively, use the provided [examples/docker-compose.yaml](https://github.com/anmutech/baikal-docker/blob/master/examples/docker-compose.yaml) from the Git repository:
+Alternatively, use the provided [examples/docker-compose.yaml](https://github.com/anmutech/baikal-docker/blob/main/examples/docker-compose.yaml) from the Git repository:
 
 ```bash
 docker compose up
@@ -95,19 +95,19 @@ You can now open [http://localhost](http://localhost) or [http://host-ip](http:/
 
 ### Advanced Configurations
 
-See the other docker-compose files in [examples](https://github.com/anmutech/baikal-docker/blob/master/examples) and guides in [docs](https://github.com/anmutech/baikal-docker/blob/master/docs).
+See the other docker-compose files in [examples](https://github.com/anmutech/baikal-docker/blob/main/examples) and guides in [docs](https://github.com/anmutech/baikal-docker/blob/main/docs).
 
 ### Persistent Data
 
 The image exposes the `/var/www/baikal/Specific` and `/var/www/baikal/config` folders, which contain the persistent data. These folders should be part of a regular backup.
 
-If you want to use local folders instead of Docker volumes, see [examples/docker-compose.localvolumes.yaml](https://github.com/anmutech/baikal-docker/blob/master/examples/docker-compose.localvolumes.yaml) to avoid file permission issues.
+If you want to use local folders instead of Docker volumes, see [examples/docker-compose.localvolumes.yaml](https://github.com/anmutech/baikal-docker/blob/main/examples/docker-compose.localvolumes.yaml) to avoid file permission issues.
 
-When the container starts, the startup script `/docker-entrypoint.d/40-fix-baikal-file-permissions.sh` ([Apache httpd](https://github.com/anmutech/baikal-docker/blob/master/files/docker-entrypoint.d/httpd/40-fix-baikal-file-permissions.sh), [nginx](https://github.com/anmutech/baikal-docker/blob/master/files/docker-entrypoint.d/nginx/40-fix-baikal-file-permissions.sh)) ensures that the file permissions are correct for all volumes mounted inside the baikal install directory `/var/www/baikal/`. You can disable this behaviour by setting the environment variable `BAIKAL_SKIP_CHOWN` to any value, e.g. `FALSE`.
+When the container starts, the startup script `/docker-entrypoint.d/40-fix-baikal-file-permissions.sh` ([Apache httpd](https://github.com/anmutech/baikal-docker/blob/main/files/docker-entrypoint.d/httpd/40-fix-baikal-file-permissions.sh), [nginx](https://github.com/anmutech/baikal-docker/blob/main/files/docker-entrypoint.d/nginx/40-fix-baikal-file-permissions.sh)) ensures that the file permissions are correct for all volumes mounted inside the baikal install directory `/var/www/baikal/`. You can disable this behaviour by setting the environment variable `BAIKAL_SKIP_CHOWN` to any value, e.g. `FALSE`.
 
 ### Healthchecks
 
-The `baikal` service in every [compose example](https://github.com/anmutech/baikal-docker/blob/master/examples) carries a `healthcheck` that uses the container's built-in `php` to fetch its own homepage and assert it contains the string `Baïkal is running alright.`. Projects that include a database container (`mysql`, `mariadb`, `postgres`) also give the `db` service a healthcheck (`mysqladmin ping` / `pg_isready`) and start `baikal` only once that dependency is `service_healthy`.
+The `baikal` service in every [compose example](https://github.com/anmutech/baikal-docker/blob/main/examples) carries a `healthcheck` that uses the container's built-in `php` to fetch its own homepage and assert it contains the string `Baïkal is running alright.`. Projects that include a database container (`mysql`, `mariadb`, `postgres`) also give the `db` service a healthcheck (`mysqladmin ping` / `pg_isready`) and start `baikal` only once that dependency is `service_healthy`.
 
 The `healthcheck` fails on fresh installs until baikal has been initialized.
 
@@ -115,13 +115,13 @@ The `healthcheck` fails on fresh installs until baikal has been initialized.
 
 You can find more installation and configuration guides here:
 
-- [Auto Backup and Upgrade Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/auto-backup-and-upgrade.md)
-- [Database Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/database-guide.md)
-- [Email Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/email-guide.md)
-- [Home Assistant Fix](https://github.com/anmutech/baikal-docker/blob/master/docs/home-assistant-fix.md)
-- [SSL Certificate Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/ssl-certificates-guide.md)
-- [systemd Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/systemd-guide.md)
-- [Unraid Installation Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/unraid-installation-guide.md)
+- [Auto Backup and Upgrade Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/auto-backup-and-upgrade.md)
+- [Database Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/database-guide.md)
+- [Email Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/email-guide.md)
+- [Home Assistant Fix](https://github.com/anmutech/baikal-docker/blob/main/docs/home-assistant-fix.md)
+- [SSL Certificate Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/ssl-certificates-guide.md)
+- [systemd Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/systemd-guide.md)
+- [Unraid Installation Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/unraid-installation-guide.md)
 
 ## Image Variants
 
@@ -139,7 +139,7 @@ If you are unsure about what your needs are, you probably want to use this one t
 
 This image relies on Apache httpd and uses the [official PHP image](https://hub.docker.com/_/php/) that's packaged with the Apache web server.
 
-It also ships with HTTPS support and self-signed certificates, which can be replaced by user-provided certificates - for more details, see the [SSL Certificate Guide](https://github.com/anmutech/baikal-docker/blob/master/docs/ssl-certificates-guide.md).
+It also ships with HTTPS support and self-signed certificates, which can be replaced by user-provided certificates - for more details, see the [SSL Certificate Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/ssl-certificates-guide.md).
 
 This image uses environment variables to set Apache's `ServerName` and `ServerAlias` directives to avoid Apache httpd's warnings in the logs.
 

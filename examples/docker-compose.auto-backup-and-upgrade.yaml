@@ -1,5 +1,5 @@
 # Docker Compose file for a Baikal server
-# See https://github.com/anmutech/baikal-docker/blob/master/docs/auto-backup-and-upgrade-guide.md
+# See https://github.com/anmutech/baikal-docker/blob/main/docs/auto-backup-and-upgrade-guide.md
 
 services:
   baikal:
