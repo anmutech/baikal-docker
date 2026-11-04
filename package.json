@@ -1,6 +1,6 @@
 {
   "name": "anmutech-baikal-docker-tests",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Runs tests against the anmutech/baikal Docker image",
   "scripts": {
     "prettier:check": "prettier . --check",
@@ -20,6 +20,9 @@
     "typescript-eslint": "^8.72.1"
   },
   "engines": {
-    "node": "^20.11.1"
+    "node": "^24.0.0"
+  },
+  "allowScripts": {
+    "cypress@16.2.1": true
   }
 }
