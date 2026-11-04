@@ -1,7 +1,7 @@
 {
-  "name": "ckulka-baikal-docker-tests",
-  "version": "0.0.1",
-  "description": "Runs tests against the ckulka/baikal Docker image",
+  "name": "anmutech-baikal-docker-tests",
+  "version": "0.0.2",
+  "description": "Runs tests against the anmutech/baikal Docker image",
   "scripts": {
     "prettier:check": "prettier . --check",
     "prettier:fix": "prettier . --write",
@@ -12,14 +12,17 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "cypress": "^14.3.0",
-    "eslint": "^9.24.0",
-    "eslint-config-prettier": "^10.1.2",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.30.1"
+    "cypress": "^16.2.1",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1"
   },
   "engines": {
-    "node": "^20.11.1"
+    "node": "^24.0.0"
+  },
+  "allowScripts": {
+    "cypress@16.2.1": true
   }
 }

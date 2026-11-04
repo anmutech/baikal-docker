@@ -7,10 +7,9 @@
 # 3. Adjust file permissions: chmod 600 /etc/ssl/private/acme.json
 # 4. Start the stack: docker compose -f docker compose.ssl.yaml up
 
-version: "2"
 services:
   baikal:
-    image: ckulka/baikal:nginx
+    image: anmutech/baikal:nginx
     restart: always
     labels:
       traefik.enable: true
@@ -24,6 +23,8 @@ services:
     volumes:
       - config:/var/www/baikal/config
       - data:/var/www/baikal/Specific
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(str_contains(file_get_contents('http://127.0.0.1:80/') ?? '', 'Baïkal is running alright.') ? 0 : 1);\""]
 
   # See https://doc.traefik.io/traefik/v2.10/
   traefik:

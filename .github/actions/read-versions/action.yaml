@@ -1,0 +1,56 @@
+name: read-versions
+description: Validate versions.env and expose BAIKAL / LATEST_PHP / OLDEST_PHP
+inputs:
+  baikal-version:
+    description: >-
+      Optional explicit Baikal version (e.g. the release tag). When not
+      provided, BAIKAL_VERSION is read from versions.env instead and must
+      be non-empty. In all cases versions.env must define LATEST_PHP_VERSION,
+      OLDEST_PHP_VERSION and OLDEST_PHP < LATEST_PHP.
+    default: ""
+outputs:
+  BAIKAL:
+    description: Baikal version (from input, or versions.env)
+    value: ${{ steps.read.outputs.BAIKAL }}
+  LATEST_PHP:
+    description: LATEST_PHP_VERSION from versions.env
+    value: ${{ steps.read.outputs.LATEST_PHP }}
+  OLDEST_PHP:
+    description: OLDEST_PHP_VERSION from versions.env
+    value: ${{ steps.read.outputs.OLDEST_PHP }}
+runs:
+  using: composite
+  steps:
+    - id: read
+      shell: bash
+      run: |
+        . ./versions.env
+        LATEST_PHP="${LATEST_PHP_VERSION:-}"
+        OLDEST_PHP="${OLDEST_PHP_VERSION:-}"
+        if [ -z "$LATEST_PHP" ] || [ -z "$OLDEST_PHP" ]
+        then
+          echo "::error file=versions.env:: LATEST_PHP_VERSION and OLDEST_PHP_VERSION must not be empty"
+          exit 1
+        fi
+        if [ -n "${INPUT_BAIKAL_VERSION:-}" ]
+        then
+          BAIKAL="$INPUT_BAIKAL_VERSION"
+        else
+          BAIKAL="${BAIKAL_VERSION:-}"
+          if [ -z "$BAIKAL" ]
+          then
+            echo "::error file=versions.env:: BAIKAL_VERSION must not be empty"
+            exit 1
+          fi
+        fi
+        LOWEST=$(printf '%s\n%s\n' "$OLDEST_PHP" "$LATEST_PHP" | sort -V | head -n1)
+        HIGHEST=$(printf '%s\n%s\n' "$OLDEST_PHP" "$LATEST_PHP" | sort -V | tail -n1)
+        if [ "$LOWEST" = "$HIGHEST" ] || [ "$LOWEST" != "$OLDEST_PHP" ]
+        then
+          echo "::error file=versions.env:: OLDEST_PHP_VERSION ($OLDEST_PHP) must be strictly lower than LATEST_PHP_VERSION ($LATEST_PHP)"
+          exit 1
+        fi
+        echo "versions.env: BAIKAL=$BAIKAL LATEST_PHP=$LATEST_PHP OLDEST_PHP=$OLDEST_PHP"
+        echo "BAIKAL=$BAIKAL"        >> "$GITHUB_OUTPUT"
+        echo "LATEST_PHP=$LATEST_PHP" >> "$GITHUB_OUTPUT"
+        echo "OLDEST_PHP=$OLDEST_PHP" >> "$GITHUB_OUTPUT"

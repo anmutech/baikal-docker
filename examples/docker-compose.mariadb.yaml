@@ -1,27 +1,33 @@
-# Docker Compose file for a Baikal server with MariaDB 5
+# Docker Compose file for a Baikal server with MariaDB 12
 # Based on issue https://github.com/ckulka/baikal-docker/issues/10
 
-version: "2"
 services:
   baikal:
-    image: ckulka/baikal:nginx
+    image: anmutech/baikal:nginx
     restart: always
     ports:
       - "80:80"
     volumes:
       - config:/var/www/baikal/config
       - data:/var/www/baikal/Specific
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(str_contains(file_get_contents('http://127.0.0.1:80/') ?? '', 'Baïkal is running alright.') ? 0 : 1);\""]
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
-    image: mariadb:10
+    image: mariadb:12
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: adalovelace
+      MYSQL_ROOT_PASSWORD: adalovelace # CHANGE THIS PASSWORD
       MYSQL_DATABASE: baikal
       MYSQL_USER: baikal
-      MYSQL_PASSWORD: ilovecookies
+      MYSQL_PASSWORD: ilovecookies # CHANGE THIS PASSWORD
     volumes:
       - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1"]
 
 volumes:
   config:

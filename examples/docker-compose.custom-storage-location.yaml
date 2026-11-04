@@ -1,15 +1,16 @@
 # Docker Compose file for a Baikal server
 
-version: "2"
 services:
   baikal:
-    image: ckulka/baikal:nginx
+    image: anmutech/baikal:nginx
     restart: always
     ports:
       - "80:80"
     volumes:
       - data:/var/www/baikal/Specific
       - config:/var/www/baikal/config
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(str_contains(file_get_contents('http://127.0.0.1:80/') ?? '', 'Baïkal is running alright.') ? 0 : 1);\""]
 
 volumes:
   config:

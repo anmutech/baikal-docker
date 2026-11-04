@@ -9,14 +9,18 @@ on:
   schedule:
     - cron: 20 8 * 1/3 0
 
-  # Build on push to master
+  # Build on push to main
   push:
     branches:
-      - master
+      - main
     paths:
       - .github/workflows/build-experimental.yaml
       - "*.dockerfile"
       - files/**
+      - versions.env
+
+  # Allow manually triggered rebuilds
+  workflow_dispatch:
 
 concurrency:
   group: build-experimental-images
@@ -24,60 +28,96 @@ concurrency:
 
 # Run the automated tests first, then publish the images if the tests pass
 jobs:
+  read_versions:
+    runs-on: ubuntu-latest
+    outputs:
+      baikal: ${{ steps.read-versions.outputs.BAIKAL }}
+      latest-php: ${{ steps.read-versions.outputs.LATEST_PHP }}
+      oldest-php: ${{ steps.read-versions.outputs.OLDEST_PHP }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
+      - name: Read versions and validate versions.env
+        id: read-versions
+        uses: ./.github/actions/read-versions
+
   test:
-    name: ${{ matrix.dockerfile }}
+    name: Test ${{ matrix.server }} (php-${{ matrix.php-version }})
+    needs: read_versions
     uses: ./.github/workflows/test-job.yaml
     with:
-      dockerfile: ${{ matrix.dockerfile }}
+      dockerfile: ${{ matrix.server }}
+      php-version: ${{ matrix.php-version }}
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
     strategy:
       fail-fast: true
       matrix:
-        dockerfile:
+        server:
           - apache
-          - apache-php8.2
           - nginx
-          - nginx-php8.2
+        php-version:
+          - ${{ needs.read_versions.outputs.latest-php }}
+          - ${{ needs.read_versions.outputs.oldest-php }}
 
   apache:
     name: Apache
-    needs: test
+    needs:
+      - read_versions
+      - test
     uses: ./.github/workflows/build-job.yaml
     with:
       dockerfile: apache.dockerfile
       image-version: experimental
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      php-version: ${{ needs.read_versions.outputs.latest-php }}
       tags: |
-        ckulka/baikal:experimental-apache
-        ckulka/baikal:experimental
+        anmutech/baikal:experimental-apache
+        anmutech/baikal:experimental
     secrets: inherit
 
-  apache_php82:
-    name: Apache (PHP 8.2)
-    needs: test
+  apache_oldest_php:
+    name: Apache (oldest PHP ${{ needs.read_versions.outputs.oldest-php }})
+    needs:
+      - read_versions
+      - test
     uses: ./.github/workflows/build-job.yaml
     with:
-      dockerfile: apache-php8.2.dockerfile
+      dockerfile: apache.dockerfile
       image-version: experimental
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      php-version: ${{ needs.read_versions.outputs.oldest-php }}
       tags: |
-        ckulka/baikal:experimental-apache-php8.2
-        ckulka/baikal:experimental-php8.2
+        anmutech/baikal:experimental-apache-php${{ needs.read_versions.outputs.oldest-php }}
+        anmutech/baikal:experimental-php${{ needs.read_versions.outputs.oldest-php }}
     secrets: inherit
 
   nginx:
     name: Nginx
-    needs: test
+    needs:
+      - read_versions
+      - test
     uses: ./.github/workflows/build-job.yaml
     with:
       dockerfile: nginx.dockerfile
       image-version: experimental
-      tags: ckulka/baikal:experimental-nginx
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      php-version: ${{ needs.read_versions.outputs.latest-php }}
+      tags: anmutech/baikal:experimental-nginx
     secrets: inherit
 
-  nginx_php82:
-    name: Nginx (PHP 8.2)
-    needs: test
+  nginx_oldest_php:
+    name: Nginx (oldest PHP ${{ needs.read_versions.outputs.oldest-php }})
+    needs:
+      - read_versions
+      - test
     uses: ./.github/workflows/build-job.yaml
     with:
-      dockerfile: nginx-php8.2.dockerfile
+      dockerfile: nginx.dockerfile
       image-version: experimental
-      tags: ckulka/baikal:experimental-nginx-php8.2
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      php-version: ${{ needs.read_versions.outputs.oldest-php }}
+      tags: anmutech/baikal:experimental-nginx-php${{ needs.read_versions.outputs.oldest-php }}
     secrets: inherit

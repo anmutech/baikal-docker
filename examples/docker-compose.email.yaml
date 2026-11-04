@@ -1,10 +1,9 @@
 # Docker Compose file for a Baikal server
-# See https://github.com/ckulka/baikal-docker/blob/master/docs/email-guide.md
+# See https://github.com/anmutech/baikal-docker/blob/main/docs/email-guide.md
 
-version: "2"
 services:
   baikal:
-    image: ckulka/baikal:nginx
+    image: anmutech/baikal:nginx
     restart: always
     environment:
       MSMTPRC: |
@@ -23,6 +22,8 @@ services:
     volumes:
       - config:/var/www/baikal/config
       - data:/var/www/baikal/Specific
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(str_contains(file_get_contents('http://127.0.0.1:80/') ?? '', 'Baïkal is running alright.') ? 0 : 1);\""]
 
 volumes:
   config:

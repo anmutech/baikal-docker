@@ -1,13 +1,25 @@
 # Multi-stage build, see https://docs.docker.com/develop/develop-images/multistage-build/
+#
+# Versions: this Dockerfile has NO defaults for BAIKAL_VERSION / PHP_VERSION.
+# The caller must always pass them, e.g.:
+#   docker build \
+#     --build-arg BAIKAL_VERSION=<value> \
+#     --build-arg PHP_VERSION=<value> \
+#     -f apache.dockerfile -t baikal:apache .
+# versions.env at the repo root is the single edit point for the values this
+# project ships.
+
+# Global build arg, usable by the FROM line for the final image
+ARG PHP_VERSION
+
 FROM alpine AS builder
+ARG BAIKAL_VERSION
 
-ENV VERSION 0.10.1
-
-ADD https://github.com/sabre-io/Baikal/releases/download/$VERSION/baikal-$VERSION.zip .
-RUN apk add unzip && unzip -q baikal-$VERSION.zip
+ADD https://github.com/sabre-io/Baikal/releases/download/$BAIKAL_VERSION/baikal-$BAIKAL_VERSION.zip .
+RUN apk add unzip && unzip -q baikal-$BAIKAL_VERSION.zip
 
 # Final Docker image
-FROM php:8.1-apache
+FROM php:${PHP_VERSION}-apache
 
 # Install Baikal and required dependencies
 COPY --from=builder --chown=www-data:www-data baikal /var/www/baikal
@@ -29,6 +41,7 @@ EXPOSE 443
 VOLUME /var/www/baikal/config
 VOLUME /var/www/baikal/Specific
 
+ENV BAIKAL_VOLUME_OWNER=www-data:www-data
 COPY files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY files/docker-entrypoint.d/*.sh files/docker-entrypoint.d/*.php files/docker-entrypoint.d/httpd/ /docker-entrypoint.d/
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
