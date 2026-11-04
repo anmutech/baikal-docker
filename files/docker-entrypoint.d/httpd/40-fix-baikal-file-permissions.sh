@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# Former flag was set, warn about the change
+if [ -n "${BAIKAL_SKIP_CHOWN:-}" ]
+then
+  echo "$ME: WARN: legacy flag BAIKAL_SKIP_CHOWN is no longer supported (value: ${BAIKAL_SKIP_CHOWN}) and is ignored;"
+fi
+
+echo "$ME: WARN: skipping chown is default behaviour; you can enable chown by setting BAIKAL_ENABLE_CHOWN=true"
+
 # Ensure correct file permissions if flag is set
 if [ ! -z ${BAIKAL_ENABLE_CHOWN+x} ]
 then

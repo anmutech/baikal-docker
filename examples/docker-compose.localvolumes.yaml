@@ -20,7 +20,7 @@ services:
     # Use this flag if you can use the default user ids (see above) and want to
     # ensure correct file permissions every time the container starts.
     # environment:
-    #   BAIKAL_ENABLE_CHOWN: "1"
+    #   BAIKAL_ENABLE_CHOWN: "true"
     volumes:
       - ./config:/var/www/baikal/config
       - ./Specific:/var/www/baikal/Specific
