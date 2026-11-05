@@ -6,6 +6,17 @@ This dockerfile provides a ready-to-go [Baïkal server](http://sabre.io/baikal/)
 
 For more details, see [anmutech/baikal-docker (GitHub)](https://github.com/anmutech/baikal-docker).
 
+**AI Disclosure**
+
+While I could maintain this repo by hand, I choose to use AI in the form of self-hosted open weight models.
+If you don't like AI, consider using [aalmenar/baikal-docker](https://github.com/aalmenar/baikal-docker).
+
+Every single change is manually reviewed and thoroughly tested by me, the AI is not able to commit to this repo.
+Small changes are mostly done by hand, while bigger changes are usually assisted by agentic AI.
+Unless missed, every commit assisted by AI has a trailer in the commit message of "Assisted-by: [model name]".
+
+At the time of writing, I am using qwen3.8.
+
 ## Supported tags and respective Dockerfile links
 
 Tags without a version are [weekly re-builds](https://github.com/anmutech/baikal-docker/actions/workflows/build-latest.yaml) to include the latest base image with the most recent updates:
