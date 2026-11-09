@@ -114,9 +114,8 @@ fi
 # The archive is created OUTSIDE the directory first and moved in afterwards:
 # tar exits 1 ("file changed as we read it") if the output file is created
 # inside the very directory it is reading.
-# The entrypoint runs as root, so the archive ends up root:root; chown it to
-# the image's web server user (BAIKAL_VOLUME_OWNER, set by the dockerfile) so
-# the backup matches the ownership of the config and Specific trees.
+# The archive ends up owned by the script's user, which needs to be corrected
+# to the user owning the volumes. Not required for the unprivileged image.
 if [ "$BACKUP" -eq 1 ]
 then
   TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
@@ -131,13 +130,14 @@ then
       then
         mv "$TMP_ARCHIVE" "$ARCHIVE"
         chmod 644 "$ARCHIVE"
-        OWNER="${BAIKAL_VOLUME_OWNER:-www-data:www-data}"
-        if id "${OWNER%%:*}" 2>/dev/null
+        if [ "$(id -u)" = "0" ]
         then
-          chown "$OWNER" "$ARCHIVE"
-          echo "$ME: created backup $ARCHIVE (owner: $OWNER)"
+          # Match the owner of the volume dir the archive is written into
+          VOL_OWNER="$(stat -c '%u:%g' "$BAIKAL_ROOT/$dir")"
+          chown "$VOL_OWNER" "$ARCHIVE"
+          echo "$ME: created backup $ARCHIVE (owner: $VOL_OWNER)"
         else
-          echo "$ME: created backup $ARCHIVE (owner: root — BAIKAL_VOLUME_OWNER='$OWNER' references an unknown user here)"
+          echo "$ME: created backup $ARCHIVE (owner: $(id -un):$(id -gn))"
         fi
         BACKED_UP="$BACKED_UP $dir"
       else
