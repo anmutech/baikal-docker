@@ -52,12 +52,14 @@ jobs:
       php-version: ${{ matrix.php-version }}
       baikal-version: ${{ needs.read_versions.outputs.baikal }}
       ref: ${{ github.event.pull_request.head.sha }}
+      port: ${{ matrix.server == 'nginx-unprivileged' && 8080 || 80 }}
     strategy:
       fail-fast: true
       matrix:
         server:
           - apache
           - nginx
+          - nginx-unprivileged
         php-version:
           - ${{ needs.read_versions.outputs.latest-php }}
           - ${{ needs.read_versions.outputs.oldest-php }}
