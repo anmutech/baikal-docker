@@ -14,12 +14,12 @@ Two environment variables activate the feature, each enabled exclusively by the 
 
 Possible combinations:
 
-| `AUTO_UPGRADE_DB` | `BACKUP_BEFORE_UPGRADE` | Behaviour |
-|---|---|---|
-| `true` | `true` | Back up `config` + `Specific`, then upgrade (the safest, recommended combination) |
-| `true` | anything else | Upgrade **without** a backup – you take the risk of an unrecoverable failure |
-| anything else | `true` | Back up `config` + `Specific` only; the upgrade itself is left to you (e.g. the web wizard) |
-| anything else | anything else | No-op, nothing is done |
+| `AUTO_UPGRADE_DB` | `BACKUP_BEFORE_UPGRADE` | Behaviour                                                                                   |
+| ----------------- | ----------------------- | ------------------------------------------------------------------------------------------- |
+| `true`            | `true`                  | Back up `config` + `Specific`, then upgrade (the safest, recommended combination)           |
+| `true`            | anything else           | Upgrade **without** a backup – you take the risk of an unrecoverable failure                |
+| anything else     | `true`                  | Back up `config` + `Specific` only; the upgrade itself is left to you (e.g. the web wizard) |
+| anything else     | anything else           | No-op, nothing is done                                                                      |
 
 Any other value (including `I_ACCEPT_THE_RISK`, `1`, `yes`) does **not** activate a flag, and the old `AUTO_BACKUP_AND_UPGRADE` variable is no longer supported – if it is still set, the script prints a warning and ignores it.
 

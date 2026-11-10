@@ -15,6 +15,12 @@ on:
         description: Baikal version build arg; must match the version the caller will build/publish
         required: true
         type: string
+      port:
+        description: >-
+          Container port the image listens on (80 for apache/nginx, 8080 for
+          nginx-unprivileged); it is always exposed as host port 80
+        default: "80"
+        type: string
       ref:
         description: Git reference to test
         default: ${{ github.ref }}
@@ -46,7 +52,7 @@ jobs:
           -t baikal-image .
 
       - name: Start Baikal container
-        run: docker run --rm -dp 80:80 --name baikal-test baikal-image
+        run: docker run --rm -dp 80:${{ inputs.port }} --name baikal-test baikal-image
 
       - name: Run Cypress tests
         run: npm run test
@@ -91,7 +97,7 @@ jobs:
             port    8025
             from    baikal@example.com
         run: |
-          docker run --rm --detach -p 80:80 -e MSMTPRC="$MSMTPRC" --link mail-server --name baikal baikal-image
+          docker run --rm --detach -p 80:${{ inputs.port }} -e MSMTPRC="$MSMTPRC" --link mail-server --name baikal baikal-image
           docker cp ${{ github.workspace }}/cypress/fixtures/mail-test.php baikal:/var/www/baikal/html/
 
       - name: Run Cypress tests incl. MSMTP

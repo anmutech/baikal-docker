@@ -66,6 +66,7 @@ jobs:
       php-version: ${{ matrix.php-version }}
       baikal-version: ${{ needs.parse_release_tag.outputs.baikal-version }}
       ref: ${{ needs.parse_release_tag.outputs.ref }}
+      port: ${{ matrix.server == 'nginx-unprivileged' && 8080 || 80 }}
     strategy:
       fail-fast: true
       matrix:

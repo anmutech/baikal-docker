@@ -50,6 +50,7 @@ jobs:
       dockerfile: ${{ matrix.server }}
       php-version: ${{ matrix.php-version }}
       baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      port: ${{ matrix.server == 'nginx-unprivileged' && 8080 || 80 }}
     strategy:
       fail-fast: true
       matrix:
