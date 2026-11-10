@@ -52,10 +52,17 @@ jobs:
           -t baikal-image .
 
       - name: Start Baikal container
-        run: docker run --rm -dp 80:${{ inputs.port }} --name baikal-test baikal-image
+        # No --rm: read the logs if the container exits during the tests.
+        run: docker run -dp 80:${{ inputs.port }} --name baikal-test baikal-image
 
       - name: Run Cypress tests
         run: npm run test
+
+      - name: Dump container logs on failure
+        if: always()
+        run: |
+          docker stop baikal-test >/dev/null 2>&1 || true
+          docker logs baikal-test
 
       - name: Assert Home Assistant fix is not applied by default
         run: |
