@@ -1,0 +1,25 @@
+# Docker Compose file for an unprivileged Baikal server
+# See https://github.com/anmutech/baikal-docker/blob/main/docs/unprivileged-guide.md
+
+services:
+  baikal:
+    image: anmutech/baikal:nginx-unprivileged
+    restart: always
+    ports:
+      - "80:8080"
+    # Default user is nginx (uid 101, gid 101).
+    # Optionally set a different UID/GID to use in the container:
+    #user: 1000:1000
+    volumes:
+      - config:/var/www/baikal/config
+      - data:/var/www/baikal/Specific
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'php -r "exit(str_contains(file_get_contents(''http://127.0.0.1:8080/'') ?? '''', ''Baïkal is running alright.'') ? 0 : 1);"',
+        ]
+
+volumes:
+  config:
+  data:
