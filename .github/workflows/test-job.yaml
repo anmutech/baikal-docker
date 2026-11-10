@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       dockerfile:
-        description: Server to test (apache or nginx); the .dockerfile suffix is appended automatically
+        description: Server to test (apache, nginx, or nginx-unprivileged); the .dockerfile suffix is appended automatically
         required: true
         type: string
       php-version:

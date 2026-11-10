@@ -56,6 +56,7 @@ jobs:
         server:
           - apache
           - nginx
+          - nginx-unprivileged
         php-version:
           - ${{ needs.read_versions.outputs.latest-php }}
           - ${{ needs.read_versions.outputs.oldest-php }}
@@ -69,8 +70,8 @@ jobs:
     with:
       dockerfile: apache.dockerfile
       image-version: experimental
-      baikal-version: ${{ needs.read_versions.outputs.baikal }}
       php-version: ${{ needs.read_versions.outputs.latest-php }}
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
       tags: |
         anmutech/baikal:experimental-apache
         anmutech/baikal:experimental
@@ -85,8 +86,8 @@ jobs:
     with:
       dockerfile: apache.dockerfile
       image-version: experimental
-      baikal-version: ${{ needs.read_versions.outputs.baikal }}
       php-version: ${{ needs.read_versions.outputs.oldest-php }}
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
       tags: |
         anmutech/baikal:experimental-apache-php${{ needs.read_versions.outputs.oldest-php }}
         anmutech/baikal:experimental-php${{ needs.read_versions.outputs.oldest-php }}
@@ -101,9 +102,9 @@ jobs:
     with:
       dockerfile: nginx.dockerfile
       image-version: experimental
-      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
-      baikal-version: ${{ needs.read_versions.outputs.baikal }}
       php-version: ${{ needs.read_versions.outputs.latest-php }}
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
       tags: anmutech/baikal:experimental-nginx
     secrets: inherit
 
@@ -116,8 +117,38 @@ jobs:
     with:
       dockerfile: nginx.dockerfile
       image-version: experimental
-      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
-      baikal-version: ${{ needs.read_versions.outputs.baikal }}
       php-version: ${{ needs.read_versions.outputs.oldest-php }}
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
       tags: anmutech/baikal:experimental-nginx-php${{ needs.read_versions.outputs.oldest-php }}
+    secrets: inherit
+
+  nginx_unprivileged:
+    name: Nginx unprivileged
+    needs:
+      - read_versions
+      - test
+    uses: ./.github/workflows/build-job.yaml
+    with:
+      dockerfile: nginx-unprivileged.dockerfile
+      image-version: experimental
+      php-version: ${{ needs.read_versions.outputs.latest-php }}
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+      tags: anmutech/baikal:experimental-nginx-unprivileged
+    secrets: inherit
+
+  nginx_unprivileged_oldest_php:
+    name: Nginx unprivileged (oldest PHP ${{ needs.read_versions.outputs.oldest-php }})
+    needs:
+      - read_versions
+      - test
+    uses: ./.github/workflows/build-job.yaml
+    with:
+      dockerfile: nginx-unprivileged.dockerfile
+      image-version: experimental
+      php-version: ${{ needs.read_versions.outputs.oldest-php }}
+      baikal-version: ${{ needs.read_versions.outputs.baikal }}
+      platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+      tags: anmutech/baikal:experimental-nginx-unprivileged-php${{ needs.read_versions.outputs.oldest-php }}
     secrets: inherit
