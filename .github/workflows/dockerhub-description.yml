@@ -6,6 +6,14 @@ on:
     types:
       - published
 
+  push:
+    branches:
+      - main
+    paths:
+      - README.md
+
+  workflow_dispatch:
+
 concurrency:
   group: dockerhub-description
   cancel-in-progress: true
