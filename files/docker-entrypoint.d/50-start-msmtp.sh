@@ -1,11 +1,25 @@
 #!/bin/sh
 
 # See https://github.com/ckulka/baikal-docker/discussions/61
+set -e
+ME=$(basename "$0")
 
 # Insert sendmail mailer definitions
 if [ ! -z ${MSMTPRC+x} ]
 then
-  echo "$MSMTPRC" > /etc/msmtprc
-  chown root:msmtp /etc/msmtprc
-  chmod 644 /etc/msmtprc
+  if [ ! -z ${UNPRIVILEGED+x} ]
+  then
+    RC=/tmp/msmtprc
+    echo "$MSMTPRC" > "$RC"
+    chmod 644 "$RC"
+  else
+    RC=/etc/msmtprc
+    echo "$MSMTPRC" > "$RC"
+    chown root:msmtp "$RC"
+    chmod 644 "$RC"
+  fi
+  echo "$ME: info: wrote msmtp config to $RC (sendmail_path: msmtp --file=$RC -t -i)"
+  
+else
+  echo "$ME: info: no MSMTPRC set; mail disabled"
 fi

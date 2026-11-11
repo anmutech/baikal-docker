@@ -25,4 +25,8 @@ services:
       - ./config:/var/www/baikal/config
       - ./Specific:/var/www/baikal/Specific
     healthcheck:
-      test: ["CMD-SHELL", "php -r \"exit(str_contains(file_get_contents('http://127.0.0.1:80/') ?? '', 'Baïkal is running alright.') ? 0 : 1);\""]
+      test:
+        [
+          "CMD-SHELL",
+          'php -r "exit(str_contains(file_get_contents(''http://127.0.0.1:80/'') ?? '''', ''Baïkal is running alright.'') ? 0 : 1);"',
+        ]

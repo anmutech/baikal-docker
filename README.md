@@ -7,7 +7,6 @@ This dockerfile provides a ready-to-go [Baïkal server](http://sabre.io/baikal/)
 For more details, see [anmutech/baikal-docker (GitHub)](https://github.com/anmutech/baikal-docker).
 
 **AI Disclosure**
-
 While I could maintain this repo by hand, I choose to use AI in the form of self-hosted open weight models.
 If you don't like AI, consider using [aalmenar/baikal-docker](https://github.com/aalmenar/baikal-docker).
 
@@ -132,6 +131,7 @@ You can find more installation and configuration guides here:
 - [Home Assistant Fix](https://github.com/anmutech/baikal-docker/blob/main/docs/home-assistant-fix.md)
 - [SSL Certificate Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/ssl-certificates-guide.md)
 - [systemd Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/systemd-guide.md)
+- [Unprivileged Image Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/unprivileged-guide.md)
 - [Unraid Installation Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/unraid-installation-guide.md)
 
 ## Image Variants
