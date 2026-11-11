@@ -23,13 +23,17 @@ Tags without a version are [weekly re-builds](https://github.com/anmutech/baikal
 - `latest` and `apache`, the latest Baïkal with the newest supported PHP
 - `apache-phpX`, the latest Baïkal with `X = OLDEST_PHP_VERSION` from [versions.env](versions.env)
 - `nginx`, and `nginx-phpX` likewise
+- `nginx-unprivileged`, and `nginx-unprivileged-phpX` likewise
 
-Two images are built from each Dockerfile — `apache.dockerfile` and `nginx.dockerfile` — one with `LATEST_PHP_VERSION` (the un-suffixed tag) and one with `OLDEST_PHP_VERSION` (the `-phpX` tag). Both the Baïkal version and the two PHP versions are defined in a single place, [versions.env](versions.env).
+Two images are built from each Dockerfile — `apache.dockerfile`, `nginx.dockerfile`, and `nginx-unprivileged.dockerfile` — one with `LATEST_PHP_VERSION` (the un-suffixed tag) and one with `OLDEST_PHP_VERSION` (the `-phpX` tag). Both the Baïkal version and the two PHP versions are defined in a single place, [versions.env](versions.env).
 
 I follow the same version naming scheme as [Baïkal](http://sabre.io/baikal/) themselves.
 
-The following tags support multiple architectures, e.g. `amd64`, `arm32v7`, and `arm64v8`.
-Since 0.13.0 only `apache` supports `i386`.
+All tags support multiple architectures, e.g. `amd64`, `arm32v7`, and `arm64v8`.
+Since 0.13.0 only `apache` based images support `i386`.
+
+The latest addition are **`nginx-unprivileged`** images. Their default user is `nginx`, **no `root` owned processes** running in the container, customizable UID with `--user <uid>:<gid>` for docker cli, or `user: <uid>:<gid>` in a compose file.
+More info here: [Unprivileged Image Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/unprivileged-guide.md)
 
 For version `0.13.0` (current), where `LATEST_PHP_VERSION = 8.5` & `OLDEST_PHP_VERSION = 8.3`:
 
@@ -37,6 +41,8 @@ For version `0.13.0` (current), where `LATEST_PHP_VERSION = 8.5` & `OLDEST_PHP_V
 - [`0.13.0-apache-php8.3`, `0.13.0-php8.3`](https://github.com/anmutech/baikal-docker/blob/main/apache.dockerfile)
 - [`0.13.0-nginx`](https://github.com/anmutech/baikal-docker/blob/main/nginx.dockerfile)
 - [`0.13.0-nginx-php8.3`](https://github.com/anmutech/baikal-docker/blob/main/nginx.dockerfile)
+- [`0.13.0-nginx-unprivileged`](https://github.com/anmutech/baikal-docker/blob/main/nginx-unprivileged.dockerfile)
+- [`0.13.0-nginx-unprivileged-php8.3`](https://github.com/anmutech/baikal-docker/blob/main/nginx-unprivileged.dockerfile)
 
 Previous versions by ckulka:
 
@@ -92,7 +98,7 @@ From [sabre.io/baikal](http://sabre.io/baikal/):
 The following command will start Baïkal:
 
 ```bash
-docker run --rm -it -p 80:80 anmutech/baikal:nginx
+docker run --rm -it -p 80:80 -v config:/var/www/baikal/config -v data:/var/www/baikal/Specific anmutech/baikal:nginx
 ```
 
 Alternatively, use the provided [examples/docker-compose.yaml](https://github.com/anmutech/baikal-docker/blob/main/examples/docker-compose.yaml) from the Git repository:
@@ -113,7 +119,9 @@ The image exposes the `/var/www/baikal/Specific` and `/var/www/baikal/config` fo
 
 If you want to use local folders instead of Docker volumes, see [examples/docker-compose.localvolumes.yaml](https://github.com/anmutech/baikal-docker/blob/main/examples/docker-compose.localvolumes.yaml) to avoid file permission issues.
 
-When the container starts, the startup script `/docker-entrypoint.d/40-fix-baikal-file-permissions.sh` ([Apache httpd](https://github.com/anmutech/baikal-docker/blob/main/files/docker-entrypoint.d/httpd/40-fix-baikal-file-permissions.sh), [nginx](https://github.com/anmutech/baikal-docker/blob/main/files/docker-entrypoint.d/nginx/40-fix-baikal-file-permissions.sh)) ensures that the file permissions are correct for all volumes mounted inside the baikal install directory `/var/www/baikal/`. You can disable this behaviour by setting the environment variable `BAIKAL_SKIP_CHOWN` to any value, e.g. `FALSE`.
+Only the privileged `nginx` and `apache` images include the startup script `/docker-entrypoint.d/40-fix-baikal-file-permissions.sh` ([Apache httpd](https://github.com/anmutech/baikal-docker/blob/main/files/docker-entrypoint.d/httpd/40-fix-baikal-file-permissions.sh), [nginx](https://github.com/anmutech/baikal-docker/blob/main/files/docker-entrypoint.d/nginx/40-fix-baikal-file-permissions.sh)).
+To enable this script set the environment variable `BAIKAL_ENABLE_CHOWN` to `true`. It then ensures that the file permissions are correct for all volumes mounted inside the baikal install directory `/var/www/baikal/`.
+The `nginx-unprivileged` images cannot fix permissions, they print how to fix the issue on the host and abort startup.
 
 ### Healthchecks
 
@@ -158,15 +166,22 @@ The `BAIKAL_SERVERNAME` environment variable is used to set the global `ServerNa
 
 The `BAIKAL_SERVERALIAS` environment variable is used to set the `ServerAlias` directive of the `VirtualHost`s, e.g. `dav.example.org dav.example.com`. For more details, see [Apache Core Features: ServerAlias Directive](https://httpd.apache.org/docs/2.4/mod/core.html#serveralias).
 
-### `anmutech/baikal:experimental`
-
-This image has the latest code from the source repository [anmutech/baikal-docker](https://github.com/anmutech/baikal-docker), mainly used for testing before a version is released. Use this at your own risk.
-
 ### `anmutech/baikal:nginx`
 
 This image relies on [nginx](https://www.nginx.com/) and uses the [official nginx image](https://hub.docker.com/_/nginx/).
 
 Compared to the Apache variant, it is significantly smaller (less than half the size) and produces no warning messages out-of-the-box.
+
+### `anmutech/baikal:nginx-unprivileged`
+
+This image relies on [nginx](https://www.nginx.com/) and uses the [official nginx-unprivileged image](https://hub.docker.com/r/nginx/nginx-unprivileged/).
+
+Compared to the privileged NGINX variant, it has no `root` owned processes running inside the container, and it supports a custom user and group id.
+For more info: [Unprivileged Image Guide](https://github.com/anmutech/baikal-docker/blob/main/docs/unprivileged-guide.md)
+
+### `anmutech/baikal:experimental`
+
+This image has the latest code from the source repository [anmutech/baikal-docker](https://github.com/anmutech/baikal-docker), mainly used for testing before a version is released. Use this at your own risk.
 
 ## Building
 
@@ -189,6 +204,15 @@ docker build \
   --build-arg BAIKAL_VERSION="$BAIKAL_VERSION" \
   --build-arg PHP_VERSION="$OLDEST_PHP_VERSION" \
   -f nginx.dockerfile -t baikal:nginx-oldest .
+```
+
+Or the nginx-unprivileged image:
+
+```sh
+docker build \
+  --build-arg BAIKAL_VERSION="$BAIKAL_VERSION" \
+  --build-arg PHP_VERSION="$OLDEST_PHP_VERSION" \
+  -f nginx-unprivileged.dockerfile -t baikal:nginx-unprivileged-oldest .
 ```
 
 Omitting either `--build-arg`, or supplying a `PHP_VERSION` that has no matching PHP packages available, will fail the build — that is intentional.

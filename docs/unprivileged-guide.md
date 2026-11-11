@@ -3,7 +3,7 @@
 This guide covers the `anmutech/baikal:nginx-unprivileged` and `…-phpX` images.
 They run all their processes as the **non-root user nginx** instead of starting out as root. It is functionally the same `nginx` image as the privileged variants, reworked so it works in environments where running containers as root is not desired. It also supports setting the user UID/GID.
 
-- **No root inside the container** — a compromised container does not directly hand the attacker root.
+- **No root processes inside the container** — a compromised container does not directly hand the attacker root.
 - **Follows any uid/gid** — one `user:` line aligns FPM, nginx, and the data volumes, which is ideal for matching an existing host user.
 
 > [!NOTE]
