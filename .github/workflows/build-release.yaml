@@ -26,7 +26,7 @@ jobs:
         id: parse-release-tag
         run: echo BAIKAL_VERSION=${GITHUB_REF_NAME/+*/} >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           show-progress: false
 

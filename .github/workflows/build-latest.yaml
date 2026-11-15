@@ -26,7 +26,7 @@ jobs:
       latest-php: ${{ steps.read-versions.outputs.LATEST_PHP }}
       oldest-php: ${{ steps.read-versions.outputs.OLDEST_PHP }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           show-progress: false
 
